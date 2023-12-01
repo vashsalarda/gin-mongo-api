@@ -106,12 +106,10 @@ func EditAUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		userId := c.Param("userId")
-		var user models.UserPatch
-		var old models.User
+		var user models.UserEdit
 		defer cancel()
 
 		objId, _ := primitive.ObjectIDFromHex(userId)
-		userCollection.FindOne(ctx, bson.M{"_id": objId}).Decode(&old)
 		//validate the request body
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}})
@@ -124,17 +122,17 @@ func EditAUser() gin.HandlerFunc {
 			return
 		}
 
-		var name string = user.Name
-		var location string = user.Location
-		var title string = user.Title
-		if user.Name == "" {
-			name = old.Name
+		update := bson.M{}
+		if user.Name != "" {
+			update["name"] = user.Name
 		}
-		if user.Title == "" {
-			title = old.Title
+		if user.Location != "" {
+			update["location"] = user.Location
+		}
+		if user.Title != "" {
+			update["title"] = user.Title
 		}
 
-		update := bson.M{"name": name, "location": location, "title": title}
 		result, err := userCollection.UpdateOne(ctx, bson.M{"_id": objId}, bson.M{"$set": update})
 
 		if err != nil {
@@ -152,7 +150,7 @@ func EditAUser() gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusNoContent, responses.UserResponse{Status: http.StatusNoContent, Message: "success", Data: map[string]interface{}{"data": updatedUser}})
+		c.JSON(http.StatusOK, responses.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"data": updatedUser}})
 	}
 }
 
