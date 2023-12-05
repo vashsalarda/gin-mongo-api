@@ -16,11 +16,9 @@ func main() {
 	//routes
 	routes.UserRoute(router)
 
-	// router.GET("/", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"data": "Hello from Gin-gonic & mongoDB",
-	// 	})
-	// })
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{"data": "Golang API using Gin-gonic & mongoDB"})
+	})
 
 	router.Run("localhost:6000")
 }
